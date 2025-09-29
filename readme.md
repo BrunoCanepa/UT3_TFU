@@ -1,4 +1,3 @@
-README.md — Mini E-Commerce API (FastAPI Demo)
 # Descripción
 
 Esta es una API REST de Mini E-Commerce desarrollada con Python + FastAPI, que demuestra los distintos conceptos de arquitectura de sistemas distribuidos y escalables.
