@@ -13,4 +13,4 @@ app.include_router(orders.router)
 
 @app.get("/")
 def root():
-    return {"message": "Mini E-Commerce API Running 🚀"}
+    return {"message": "Mini E-Commerce API Running "}
