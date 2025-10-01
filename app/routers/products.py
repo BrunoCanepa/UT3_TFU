@@ -11,7 +11,7 @@ def get_db():
         yield db
     finally:
         db.close()
-
+# RPC
 @router.post("/", response_model=schemas.Product)
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
     db_product = models.Product(**product.dict())
