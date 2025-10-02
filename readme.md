@@ -30,6 +30,19 @@ Cada componente expone su interfaz REST y se conecta a la base de datos usando S
 
 ## Cómo levantar el proyecto
 
+### Prerequisitos:
+
+Antes de empezar, asegúrate de tener instaladas las siguientes herramientas:
+
+* **Docker Desktop**
+* **Minikube** y **kubectl**
+* **k6**
+* **jq**
+
+
+### Opciones de Ejecución:
+
+
 ### Opción A: Docker (una sola instancia)
 
 ```bash
