@@ -15,7 +15,7 @@ JWKS_URL = f"{AUTH0_ISSUER}.well-known/jwks.json"
 BACKEND_URL = f"http://localhost:{os.getenv('BACKEND_PORT')}"
 GATEWAY_PORT = int(os.getenv("GATEWAY_PORT"))
 
-app= FastAPI("Api Gateway")
+app= FastAPI(title="Api Gateway")
 
 jwks_client= None
 
@@ -58,7 +58,7 @@ async def verify_token(request: Request):
     except JWTError as e:
         raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
 
-    # Guardamos datos de usuario en request.state para pasarlos al backend
+    # Guardo los datos del user en request.state para pasarlos al back
     request.state.user = {
         "sub": payload.get("sub"),
         "email": payload.get("email"),
@@ -66,3 +66,25 @@ async def verify_token(request: Request):
     }
     print(f"Gateway: token válido para {payload.get('email') or payload.get('sub')}")
     return payload
+
+@app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy(request: Request, path: str):
+    
+    await verify_token(request)
+
+    # Mando la peticion al backend con los headers 
+    async with httpx.AsyncClient() as client:
+        backend_headers = dict(request.headers)
+        backend_headers["X-User-Sub"] = request.state.user["sub"]
+        backend_headers["X-User-Email"] = request.state.user["email"]
+        backend_headers["X-User-Name"] = request.state.user["name"]
+
+        backend_url = f"{BACKEND_URL}/{path}"
+        r = await client.request(
+            method=request.method,
+            url=backend_url,
+            headers=backend_headers,
+            data=await request.body()
+        )
+    print(f"Gateway -> Forwarding request to backend: {request.method} /{path} user: {request.state.user['email']}")
+    return JSONResponse(status_code=r.status_code, content=r.json())

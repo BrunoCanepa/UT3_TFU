@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import os
 from . import orm
 from .database import engine
@@ -26,3 +26,19 @@ def health():
 def whoami():
     instance = os.getenv("INSTANCE_NAME", os.getenv("HOSTNAME", "unknown"))
     return {"instance": instance}
+
+#test endpoint para los datos del user a travez del gateway.
+@app.get("/private")
+async def private(request: Request):
+    user_sub = request.headers.get("X-User-Sub")
+    user_email = request.headers.get("X-User-Email")
+    user_name = request.headers.get("X-User-Name")
+
+    if not user_sub:
+        raise HTTPException(status_code=401, detail="No autorizado: falta header user")
+
+    print(f"Backend: petición recibida. user: {user_email}")
+    return {
+        "msg": "Acceso OK desde backend",
+        "user": {"sub": user_sub, "email": user_email, "name": user_name}
+    }
