@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rq-dashboard
+  labels:
+    app: rq-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rq-dashboard
+  template:
+    metadata:
+      labels:
+        app: rq-dashboard
+    spec:
+      containers:
+        - name: rq-dashboard
+          image: eoranged/rq-dashboard:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - --redis-url
+            - redis://redis:6379/0
+            - --host
+            - 0.0.0.0
+            - --port
+            - "9181"
+          env:
+            - name: RQ_DASHBOARD_PORT
+              value: "9181"
+          ports:
+            - containerPort: 9181
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9181
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rq-dashboard-svc
+  labels:
+    app: rq-dashboard
+spec:
+  selector:
+    app: rq-dashboard
+  ports:
+    - port: 9181
+      targetPort: 9181
+      name: http

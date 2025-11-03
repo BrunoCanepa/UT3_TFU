@@ -3,6 +3,7 @@ import os
 from . import models
 from .database import engine
 from .routers import products, customers, orders
+from .cache import get_redis
 
 # Evitar que múltiples instancias ejecuten DDL simultáneamente (solo cuando RUN_DB_INIT=true)
 if os.getenv("RUN_DB_INIT", "false").lower() == "true":
@@ -26,3 +27,13 @@ def health():
 def whoami():
     instance = os.getenv("INSTANCE_NAME", os.getenv("HOSTNAME", "unknown"))
     return {"instance": instance}
+
+@app.get("/cache")
+def get_cache():
+    """Show all cached data"""
+    redis = get_redis()
+    keys = redis.keys("*")
+    cache_data = {}
+    for key in keys:
+        cache_data[key] = redis.get(key)
+    return {"cached_items": len(cache_data), "data": cache_data}
