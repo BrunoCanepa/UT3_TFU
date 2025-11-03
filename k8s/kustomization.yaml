@@ -4,4 +4,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - hpa.yaml
-
+  - redis.yaml
+  - postgres.yaml
+  - worker.yaml
+  - rq-dashboard.yaml

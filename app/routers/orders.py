@@ -4,6 +4,8 @@ from .. import models, schemas
 from ..database import get_db
 from datetime import datetime
 from ..limiter import limiter
+from ..queue import get_queue
+from ..tasks import create_order_task
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -14,16 +16,15 @@ def create_order(request: Request, order: schemas.OrderCreate, db: Session = Dep
     if not customer:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
-    new_order = models.Order(
-        customer_id=order.customer_id,
-        total=order.total,
-        date=datetime.utcnow()
-    )
-
-    db.add(new_order)
-    db.commit()
-    db.refresh(new_order)
-    return new_order
+    q = get_queue()
+    job = q.enqueue(create_order_task, order.customer_id, order.total)
+    
+    return {
+        "message": "Orden encolada exitosamente",
+        "job_id": job.id,
+        "customer_id": order.customer_id,
+        "total": order.total
+    }
 
 @router.get("/", response_model=list[schemas.Order])
 @limiter.limit("10/minute")

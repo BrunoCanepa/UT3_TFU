@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import TypeVar, Generic, List
 
 # PRODUCT
 class ProductBase(BaseModel):
@@ -13,7 +14,7 @@ class ProductCreate(ProductBase):
 class Product(ProductBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # CUSTOMER
 class CustomerBase(BaseModel):
@@ -26,7 +27,7 @@ class CustomerCreate(CustomerBase):
 class Customer(CustomerBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ORDER
 class OrderBase(BaseModel):
@@ -40,4 +41,15 @@ class Order(OrderBase):
     id: int
     date: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# RESPONSE WITH PROCESSING TIME
+T = TypeVar('T')
+
+class ResponseWithTime(BaseModel, Generic[T]):
+    data: T
+    processing_time_ms: float
+
+class ListResponseWithTime(BaseModel, Generic[T]):
+    data: List[T]
+    processing_time_ms: float

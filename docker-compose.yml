@@ -18,6 +18,30 @@ services:
     volumes:
       - cache_data:/data
 
+  redis: 
+    image: redis:alpine
+  worker: 
+    build: .
+    command: python -m app.worker
+    environment:
+      DATABASE_URL: postgresql+psycopg2://demo:demo@db:5432/ecommerce
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  
+  rq-dashboard:
+    image: red/rq-dashboard
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      RQ_DASHBOARD_REDIS_URL: redis://redis:6379/0
+    ports:
+      - "9181:9181"
+    depends_on:
+      - redis
+
   api:
     build: .
     environment:
@@ -25,6 +49,7 @@ services:
       REDIS_URL: redis://cache:6379/0
       INSTANCE_NAME: api
       RUN_DB_INIT: "true"
+      REDIS_URL: redis://redis:6379/0 
     depends_on:
       db:
         condition: service_healthy
