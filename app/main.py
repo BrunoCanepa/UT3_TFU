@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import os
 from . import models
 from .database import engine
+from .routers import products, customers, orders
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from .limiter import limiter
 from .routers import products, customers, orders
 
 # Evitar que múltiples instancias ejecuten DDL simultáneamente (solo cuando RUN_DB_INIT=true)
@@ -9,6 +13,10 @@ if os.getenv("RUN_DB_INIT", "false").lower() == "true":
     models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Mini E-Commerce API")
+
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(products.router)
 app.include_router(customers.router)
