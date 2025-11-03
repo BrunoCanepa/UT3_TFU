@@ -13,7 +13,7 @@ class ProductCreate(ProductBase):
 class Product(ProductBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # CUSTOMER
 class CustomerBase(BaseModel):
@@ -26,7 +26,7 @@ class CustomerCreate(CustomerBase):
 class Customer(CustomerBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ORDER
 class OrderBase(BaseModel):
@@ -40,4 +40,4 @@ class Order(OrderBase):
     id: int
     date: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True

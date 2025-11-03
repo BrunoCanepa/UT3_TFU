@@ -13,12 +13,16 @@ services:
       timeout: 3s
       retries: 10
 
+  redis: 
+    image: redis:alpine
+
   api:
     build: .
     environment:
       DATABASE_URL: postgresql+psycopg2://demo:demo@db:5432/ecommerce
       INSTANCE_NAME: api
       RUN_DB_INIT: "true"
+      REDIS_URL: redis://redis:6379/0 
     depends_on:
       db:
         condition: service_healthy
