@@ -1,19 +1,11 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from .. import models, schemas
-# from ..database import SessionLocal
 from ..database import get_db
 from ..limiter import limiter
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-# RPC
 @router.post("/", response_model=schemas.Product)
 
 @limiter.limit("10/minute")

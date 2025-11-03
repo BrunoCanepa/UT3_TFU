@@ -1,19 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from .. import models, schemas
-# from ..database import SessionLocal
 from ..database import get_db
 from datetime import datetime
 from ..limiter import limiter
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
-
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
 
 @router.post("/", response_model=schemas.Order)
 @limiter.limit("10/minute")
