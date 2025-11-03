@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import SessionLocal
-from datetime import datetime
 from ..queue import get_queue
-from ..tasks import process_order
+from ..tasks import create_order_task
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -15,26 +14,22 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/", response_model=schemas.Order)
+@router.post("/")
 def create_order(order: schemas.OrderCreate, db: Session = Depends(get_db)):
+
     customer = db.query(models.Customer).filter(models.Customer.id == order.customer_id).first()
     if not customer:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
-    new_order = models.Order(
-        customer_id=order.customer_id,
-        total=order.total,
-        date=datetime.utcnow()
-    )
-
-    db.add(new_order)
-    db.commit()
-    db.refresh(new_order)
-
     q = get_queue()
-    q.enqueue(process_order, new_order.id)
+    job = q.enqueue(create_order_task, order.customer_id, order.total)
     
-    return new_order
+    return {
+        "message": "Orden encolada exitosamente",
+        "job_id": job.id,
+        "customer_id": order.customer_id,
+        "total": order.total
+    }
 
 @router.get("/", response_model=list[schemas.Order])
 def list_orders(db: Session = Depends(get_db)):
