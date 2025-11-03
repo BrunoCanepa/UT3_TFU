@@ -5,4 +5,5 @@ resources:
   - service.yaml
   - hpa.yaml
   - redis.yaml  
- 
+  - worker.yaml
+  - rq-dashboard.yaml

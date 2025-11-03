@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import SessionLocal
 from datetime import datetime
+from ..queue import get_queue
+from ..tasks import process_order
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -28,6 +30,10 @@ def create_order(order: schemas.OrderCreate, db: Session = Depends(get_db)):
     db.add(new_order)
     db.commit()
     db.refresh(new_order)
+
+    q = get_queue()
+    q.enqueue(process_order, new_order.id)
+    
     return new_order
 
 @router.get("/", response_model=list[schemas.Order])
