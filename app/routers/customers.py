@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import SessionLocal
+import random
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
@@ -23,9 +24,26 @@ def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_
     db.refresh(new_customer)
     return new_customer
 
-@router.get("/", response_model=list[schemas.Customer])
+@router.get("/")
 def list_customers(db: Session = Depends(get_db)):
-    return db.query(models.Customer).all()
+    customers = db.query(models.Customer).all()
+    if random.random() < 0.2:
+        customers_data = [
+            {"id": f"El id es: {c.id}", "name": f"El nombre es: {c.name.upper()}", "email": f"El email es: {c.email}"}
+            for c in customers
+        ]
+        print("Customersdata(canary)")
+        print(customers_data)
+        return {
+            "version": "v2",
+            "note": "Canary release - Nueva presentación de clientes",
+            "customers_quantity": len(customers_data),
+            "customers": customers_data
+    }
+    else:
+        print("noncanary customers")
+        print(customers)
+        return customers
 
 @router.get("/{customer_id}", response_model=schemas.Customer)
 def get_customer(customer_id: int, db: Session = Depends(get_db)):
