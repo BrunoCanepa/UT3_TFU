@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import TypeVar, Generic, List
 
 # PRODUCT
 class ProductBase(BaseModel):
@@ -41,3 +42,14 @@ class Order(OrderBase):
     date: datetime
     class Config:
         from_attributes = True
+
+# RESPONSE WITH PROCESSING TIME
+T = TypeVar('T')
+
+class ResponseWithTime(BaseModel, Generic[T]):
+    data: T
+    processing_time_ms: float
+
+class ListResponseWithTime(BaseModel, Generic[T]):
+    data: List[T]
+    processing_time_ms: float
