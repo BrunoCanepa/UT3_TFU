@@ -23,7 +23,7 @@ def create_customer(request: Request, customer: schemas.CustomerCreate, db: Sess
 
 @router.get("/")
 # @router.get("/", response_model=list[schemas.Customer])
-@limiter.limit("10/minute")
+# @limiter.limit("10/minute")
 def list_customers(db: Session = Depends(get_db)):
     customers = db.query(models.Customer).all()
     if random.random() < 0.1:
