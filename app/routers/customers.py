@@ -27,7 +27,7 @@ def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_
 @router.get("/")
 def list_customers(db: Session = Depends(get_db)):
     customers = db.query(models.Customer).all()
-    if random.random() < 0.2:
+    if random.random() < 0.1:
         customers_data = [
             {"id": f"El id es: {c.id}", "name": f"El nombre es: {c.name.upper()}", "email": f"El email es: {c.email}"}
             for c in customers
