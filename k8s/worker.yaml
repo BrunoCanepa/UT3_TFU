@@ -24,6 +24,8 @@ spec:
               value: redis://redis:6379/0
             - name: RUN_DB_INIT
               value: "true"
+            - name: DATABASE_URL
+              value: postgresql://postgres:postgres@postgres:5432/ecommerce
           resources:
             requests:
               cpu: 50m
