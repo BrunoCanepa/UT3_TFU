@@ -1,4 +1,7 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
+from .database import get_db
 import os
 from . import models
 from .database import engine
@@ -34,3 +37,18 @@ def health():
 def whoami():
     instance = os.getenv("INSTANCE_NAME", os.getenv("HOSTNAME", "unknown"))
     return {"instance": instance}
+
+@app.get("/health/live", tags=["Health Check"])
+def liveness_check():
+    return {"status": "alive"}
+
+@app.get("/health/ready", tags=["Health Check"])
+def readiness_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ready", "database": "connected"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=503, 
+            detail={"status": "not_ready", "database": "disconnected", "error": str(e)}
+        )

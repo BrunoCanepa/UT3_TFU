@@ -30,7 +30,12 @@ services:
         condition: service_healthy
       cache:
         condition: service_started # No tiene 'healthcheck' pero podemos esperar a que inicie
-
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 10s    
+      timeout: 5s     
+      retries: 5        
+      start_period: 15s 
   nginx:
     image: nginx:alpine
     volumes:
