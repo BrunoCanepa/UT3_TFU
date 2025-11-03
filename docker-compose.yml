@@ -12,6 +12,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  cache:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - cache_data:/data
 
   redis: 
     image: redis:alpine
@@ -41,12 +46,21 @@ services:
     build: .
     environment:
       DATABASE_URL: postgresql+psycopg2://demo:demo@db:5432/ecommerce
+      REDIS_URL: redis://cache:6379/0
       INSTANCE_NAME: api
       RUN_DB_INIT: "true"
       REDIS_URL: redis://redis:6379/0 
     depends_on:
       db:
         condition: service_healthy
+      cache:
+        condition: service_started # No tiene 'healthcheck' pero podemos esperar a que inicie
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 10s    
+      timeout: 5s     
+      retries: 5        
+      start_period: 15s 
   nginx:
     image: nginx:alpine
     volumes:
@@ -54,9 +68,13 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   db_data:
+  cache_data:
+
+
 
 

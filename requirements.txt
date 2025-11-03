@@ -3,5 +3,6 @@ uvicorn
 sqlalchemy
 pydantic
 psycopg2-binary
+slowapi[redis]
 redis>=5.0 
 rq>=1.15

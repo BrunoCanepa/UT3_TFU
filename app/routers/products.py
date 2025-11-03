@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from .. import models, schemas
+from ..database import get_db
+from ..limiter import limiter
 from ..database import SessionLocal
 import json 
 import time
@@ -16,7 +18,9 @@ def get_db():
         db.close()
 # RPC
 @router.post("/")
-def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+
+def create_product(request: Request, product: schemas.ProductCreate, db: Session = Depends(get_db)):
     start_time = time.time()
     db_product = models.Product(**product.dict())
     db.add(db_product)
@@ -30,7 +34,8 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     }
 
 @router.get("/")
-def list_products(db: Session = Depends(get_db)):
+@limiter.limit("10/minute") 
+def list_products(request: Request, db: Session = Depends(get_db)):
     start_time = time.time()
     cache_key = "products:all"  
     cached = cache_get(cache_key)  
